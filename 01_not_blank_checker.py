@@ -1,6 +1,5 @@
 # Get's recipe name and checks it is not blank
 
-
 # Not Blank Function goes here
 def not_blank(question):
     valid = False

@@ -4,24 +4,25 @@
 # Not Blank Function goes here
 def not_blank(question):
 
-    error = "Your recipe name has numbers in it."
-    has_errors = ""
+    error = "Sorry - this can't be blank or contain numbers"
 
     valid = False
     while not valid:
+        has_errors = ""
         response = input(question)
 
         # look at each character in string and if its a number, complain
-        for letter in recipe_name:
+        for letter in response:
             if letter.isdigit():
-                print(error)
+                has_errors = "yes"
                 break
 
         if response == "":
+            print(error)
             continue
         elif has_errors != "":
             print(error)
-            break
+            continue
 
         else:
             return response
