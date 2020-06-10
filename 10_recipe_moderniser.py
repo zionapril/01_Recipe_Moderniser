@@ -1,10 +1,11 @@
 # modules to be used...
 import csv
 import re
+
 # ***** Functions *****
 
-
 # Not blank Function gos here
+
 def not_blank(question, error_msg, num_ok):
     error = error_msg
 
@@ -100,8 +101,62 @@ def get_all_ingredients():
         else:
             all_ingredients.append(get_recipe_line)
 
+    return all_ingredients
+
+
+def general_converter(how_much, lookup, dictionary, conversion_factor):
+    if lookup in dictionary:
+        mult_by = dictionary.get(unit)
+        how_much = how_much * mult_by * conversion_factor
+
+        return how_much
+
+def unit_checker():
+
+    unit_tocheck = input("Unit? ")
+
+    # Abbreviation listssnip
+    teaspoon = ["tsp", "teaspoon", "t"]
+    tablespoon = ["tbs", "tablespoon", "T", "tbsp"]
+    ounce = ["oz", "fluid", "ounce", "fl"]
+    cup = ["c", "cup"]
+    pint = ["p", "pt"]
+    quart = ["q", "qt"]
+    millilitre = ["ml", "mL"]
+    litre = ["L", "l"]
+    decilitre = ["dl", "dL"]
+    pound = ["lb", "#"]
+
+    if unit_tocheck == "":
+        print("you chose {}".format(unit_tocheck))
+        return unit_tocheck
+
+    elif unit_tocheck == "T" or unit_tocheck.lower() in tablespoon:
+        return "tbs"
+    elif unit_tocheck.lower() in teaspoon:
+        return "tsp"
+    elif unit_tocheck.lower() in ounce:
+        return "ounce"
+    elif unit_tocheck.lower() in cup:
+        return "cup"
+    elif unit_tocheck.lower() in pint:
+        return "pint"
+    elif unit_tocheck.lower() in quart:
+        return "quart"
+    elif unit_tocheck.lower() in millilitre:
+        return "millilitre"
+    elif unit_tocheck.lower() in litre:
+        return "litre"
+    elif unit_tocheck.lower() in decilitre:
+        return "decilitre"
+    elif unit_tocheck.lower() in pound:
+        return "pound"
+    else:
+        return unit_tocheck
+
 
 # ***** Main Routine *****
+
 
 # set up Dictionaries
 
@@ -115,22 +170,12 @@ source = not_blank("Where is the recipe from? ",
                    "yes")
 # Get serving sizes and scale factor
 scale_factor = get_sf()
-print(scale_factor)
 
 # Get amounts, units and ingredients from user...
 full_recipe = get_all_ingredients()
 
+
 # Split each line of the recipe into amount, unit and ingredient...
-full_recipe =[
-    "1 1/2 ml flour",
-    "3/4 cup milk",
-    "1 cup flour",
-    "2 tablespoons white sugar",
-    "1.5 tsp baking powder",
-    "pinch of cinammon"
-
-]
-
 mixed_regex = "\d{1,3}\s\d{1,3}\/\d{1,3}"
 
 
@@ -139,6 +184,7 @@ for recipe_line in full_recipe:
 
         # Get amount...
         if re.match(mixed_regex, recipe_line):
+            print("has mixed")
 
             # Get mixed number by matching the regex
             pre_mixed_num = re.match(mixed_regex, recipe_line)
@@ -149,6 +195,7 @@ for recipe_line in full_recipe:
             # Change the string into a decimal
             amount = eval(amount)
             amount = amount * scale_factor
+            print(amount)
 
 
             # Get unit and ingredient...
@@ -158,10 +205,12 @@ for recipe_line in full_recipe:
 
         else:
             get_amount = recipe_line.split(" ", 1) # split line at first space
+            print(get_amount)
 
             try:
                 amount = eval(get_amount[0]) # convert amount to float if possible
                 amount = amount * scale_factor
+
             except NameError:
                 amount = get_amount[0]
                 full_recipe.append(recipe_line)
@@ -169,18 +218,12 @@ for recipe_line in full_recipe:
 
             unit_ingredient = get_amount[1]
 
-
-
-
-
         # Get unit and ingredient...
         get_unit = unit_ingredient.split(" ", 1)    # splits text at first space
+        # print(get_unit)
 
         unit = get_unit[0]
 
-        ingredient = get_unit[1]
-
-        print("{} {} {}".format(amount,unit, ingredient))
         # convert into ml
 
         num_spaces = recipe_line.count(" ")
@@ -192,6 +235,8 @@ for recipe_line in full_recipe:
             continue
 
         full_recipe.append("{} {} {}".format(amount, unit, ingredient))
+
+
 
 # Put updated ingredient in the list
 

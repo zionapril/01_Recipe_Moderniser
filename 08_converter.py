@@ -10,11 +10,11 @@
 # Functions go here
 def general_converter(how_much, lookup, dictionary, conversion_factor):
 
-     if lookup in dictionary:
+    if lookup in dictionary:
         mult_by = dictionary.get(unit)
         how_much = how_much * mult_by * conversion_factor
 
-     return how_much
+        return how_much
 
 
 def unit_checker():
