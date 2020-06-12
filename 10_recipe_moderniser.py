@@ -111,9 +111,7 @@ def general_converter(how_much, lookup, dictionary, conversion_factor):
 
     return how_much
 
-def unit_checker():
-
-    unit_tocheck = input("Unit? ")
+def unit_checker(unit_tocheck):
 
     # Abbreviation listssnip
     teaspoon = ["tsp", "teaspoon", "t"]
@@ -159,7 +157,7 @@ def unit_checker():
 
 
 # set up Dictionaries
-
+modernised_recipe = []
 # set up list to hold 'modernised' ingredients
 recipe_name = not_blank("What is the recipe name? ",
                    "The recipe name can't be blank and can't contain numbers,",
@@ -184,7 +182,7 @@ for recipe_line in full_recipe:
 
     # Get amount...
     if re.match(mixed_regex, recipe_line):
-        print("has mixed")
+
 
         # Get mixed number by matching the regex
         pre_mixed_num = re.match(mixed_regex, recipe_line)
@@ -213,7 +211,7 @@ for recipe_line in full_recipe:
 
         except NameError:
             amount = get_amount[0]
-            full_recipe.append(recipe_line)
+            modernised_recipe.append(recipe_line)
             continue
 
         unit_ingredient = get_amount[1]
@@ -231,10 +229,10 @@ for recipe_line in full_recipe:
         ingredient = get_unit[1]
     # convert into g
     else:
-        full_recipe.append("{} {}".format(amount, unit_ingredient))
+        modernised_recipe.append("{} {}".format(amount, unit_ingredient))
         continue
 
-    full_recipe.append("{} {} {}".format(amount, unit, ingredient))
+    modernised_recipe.append("{} {} {}".format(amount, unit, ingredient))
 
 
 
@@ -246,8 +244,7 @@ for item in full_recipe:
 
 # Loop for each ingredient...
 
-# Get ingredient amount
-# Get ingredient name
+
 # Get unit
 
 
