@@ -6,6 +6,7 @@ import re
 
 # Not blank Function gos here
 
+
 def not_blank(question, error_msg, num_ok):
     error = error_msg
 
@@ -31,6 +32,7 @@ def not_blank(question, error_msg, num_ok):
         else:
             return response
 
+
 # Number checking function (number must be a float that is more than 0)
 def num_check(question):
 
@@ -51,7 +53,9 @@ def num_check(question):
         except ValueError:
             print(error)
 
+
 def get_sf():
+    scale_factor = 0
     dodgy_sf = "yes"
     while dodgy_sf == "yes":
 
@@ -74,6 +78,7 @@ def get_sf():
             dodgy_sf = "no"
 
     return scale_factor
+
 
 # Function to get (and check amount, unit and ingredient)
 def get_all_ingredients():
@@ -106,10 +111,16 @@ def get_all_ingredients():
 
 def general_converter(how_much, lookup, dictionary, conversion_factor):
     if lookup in dictionary:
-        mult_by = dictionary.get(unit)
-        how_much = how_much * mult_by * conversion_factor
+        mult_by = dictionary.get(lookup)
+        how_much = how_much * float(mult_by) / conversion_factor
+        converted = "yes"
 
-    return how_much
+    else:
+        converted = "no"
+
+
+
+    return [converted, how_much]
 
 def unit_checker(unit_tocheck):
 
@@ -158,6 +169,36 @@ def unit_checker(unit_tocheck):
 
 # set up Dictionaries
 modernised_recipe = []
+
+# Dictionary to convert to mls
+unit_central = {
+    "tsp" : 5,
+    "tbs" : 15,
+    "cup" : 237,
+    "ounce" : 30,
+    "pint" : 473,
+    "quart" : 946,
+    "pound" : 454,
+    "litre" : 1000
+}
+
+# dictionary to convert to grams where possible
+# open file
+groceries = open('01_ingredients_ml_to_g.csv')
+
+# Read data into a list
+csv_groceries = csv.reader(groceries)
+
+# Create a dictionary to hold the data
+food_dictionary = {}
+
+# Add the data from the list into the dictionary
+# (first item in row is key, next is definition)
+
+for row in csv_groceries:
+    food_dictionary[row[0]] = row[1]
+
+
 # set up list to hold 'modernised' ingredients
 recipe_name = not_blank("What is the recipe name? ",
                    "The recipe name can't be blank and can't contain numbers,",
@@ -183,7 +224,6 @@ for recipe_line in full_recipe:
     # Get amount...
     if re.match(mixed_regex, recipe_line):
 
-
         # Get mixed number by matching the regex
         pre_mixed_num = re.match(mixed_regex, recipe_line)
         mixed_num = pre_mixed_num.group()
@@ -194,7 +234,6 @@ for recipe_line in full_recipe:
         amount = eval(amount)
         amount = amount * scale_factor
         print(amount)
-
 
         # Get unit and ingredient...
         compile_regex = re.compile(mixed_regex)
@@ -207,8 +246,9 @@ for recipe_line in full_recipe:
 
         try:
             amount = eval(get_amount[0]) # convert amount to float if possible
-            amount = amount * scale_factor
+            amount *= scale_factor
 
+        # line has no amount (eg: pinch of salt)
         except NameError:
             amount = get_amount[0]
             modernised_recipe.append(recipe_line)
@@ -221,19 +261,37 @@ for recipe_line in full_recipe:
     # print(get_unit)
 
     unit = get_unit[0]
+    ingredient = get_unit[1]
+    unit = unit_checker(unit)
 
     # convert into ml
+    amount = general_converter(amount, unit, unit_central, 1)
+    print("Amount from ml convertera", amount)
 
-    num_spaces = recipe_line.count(" ")
-    if num_spaces > 1:
-        ingredient = get_unit[1]
-    # convert into g
-    else:
-        modernised_recipe.append("{} {}".format(amount, unit_ingredient))
-        continue
+    # try convert to grams...
+    if amount[1] == "yes":
+        amount_2 = general_converter(amount[0], ingredient, food_dictionary, 250)
 
-    modernised_recipe.append("{} {} {}".format(amount, unit, ingredient))
+        if amount_2[1] == "yes":
 
+            # add to list
+            if ingredient in food_dictionary:
+                mult_by = food_dictionary.get(ingredient)
+                amount = amount * float(mult_by) / 250
+                print("Amount in g {}".format(amount))
+                modernised_recipe.append("{} g {}".format(amount, ingredient))
+
+            # if it could not  be converted, leave it as mls
+            else:
+                # print("add unchanged")
+                print("{} is unchanged".format(amount))
+                modernised_recipe.append("{} ml {}".format(amount, ingredient))
+                continue
+
+        # if it is not in mls...
+        else:
+            print("update with original")
+            modernised_recipe.append("{} {} {}".format(amount, unit, ingredient))
 
 
 # Put updated ingredient in the list
