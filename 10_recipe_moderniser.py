@@ -4,9 +4,8 @@ import re
 
 # ***** Functions *****
 
+
 # Not blank Function gos here
-
-
 def not_blank(question, error_msg, num_ok):
     error = error_msg
 
@@ -120,9 +119,11 @@ def general_converter(how_much, lookup, dictionary, conversion_factor):
 
 
 
-    return [converted, how_much]
+    return [how_much, converted]
 
-def unit_checker(unit_tocheck):
+def unit_checker(raw_unit):
+
+    unit_tocheck = raw_unit
 
     # Abbreviation listssnip
     teaspoon = ["tsp", "teaspoon", "t"]
@@ -135,6 +136,7 @@ def unit_checker(unit_tocheck):
     litre = ["L", "l"]
     decilitre = ["dl", "dL"]
     pound = ["lb", "#"]
+    grams = ["g", "gram", "grams"]
 
     if unit_tocheck == "":
         print("you chose {}".format(unit_tocheck))
@@ -160,6 +162,8 @@ def unit_checker(unit_tocheck):
         return "decilitre"
     elif unit_tocheck.lower() in pound:
         return "pound"
+    elif unit_tocheck.lower() in grams:
+        return "g"
     else:
         return unit_tocheck
 
@@ -233,7 +237,6 @@ for recipe_line in full_recipe:
         # Change the string into a decimal
         amount = eval(amount)
         amount = amount * scale_factor
-        print(amount)
 
         # Get unit and ingredient...
         compile_regex = re.compile(mixed_regex)
@@ -242,7 +245,6 @@ for recipe_line in full_recipe:
 
     else:
         get_amount = recipe_line.split(" ", 1) # split line at first space
-        print(get_amount)
 
         try:
             amount = eval(get_amount[0]) # convert amount to float if possible
@@ -260,44 +262,47 @@ for recipe_line in full_recipe:
     get_unit = unit_ingredient.split(" ", 1)    # splits text at first space
     # print(get_unit)
 
-    unit = get_unit[0]
-    ingredient = get_unit[1]
-    unit = unit_checker(unit)
+    num_spaces = recipe_line.count(" ")
+    if num_spaces > 1:
+        unit = get_unit[0]
+        ingredient = get_unit[1]
+        unit = unit_checker(unit)
 
-    # convert into ml
-    amount = general_converter(amount, unit, unit_central, 1)
-    print("Amount from ml convertera", amount)
+        # GK Added, if unit in grams, add to list
+        if unit == "g":
+            modernised_recipe.append("{:.0f} g {}".format(amount, ingredient))
+            continue
 
-    # try convert to grams...
-    if amount[1] == "yes":
-        amount_2 = general_converter(amount[0], ingredient, food_dictionary, 250)
+        # convert into ml
+        amount = general_converter(amount, unit, unit_central, 1)
+        print("Amount from ml convertera", amount)
 
-        if amount_2[1] == "yes":
+        # try convert to grams...
+        if amount[1] == "yes":
+            amount_2 = general_converter(amount[0], ingredient, food_dictionary, 250)
 
-            # add to list
-            if ingredient in food_dictionary:
-                mult_by = food_dictionary.get(ingredient)
-                amount = amount * float(mult_by) / 250
-                print("Amount in g {}".format(amount))
-                modernised_recipe.append("{} g {}".format(amount, ingredient))
+            # if ingredient is in list, it has been converted to grams, add to modernised recipe
+            if amount_2[1] == "yes":
+                modernised_recipe.append("{:.0f} g {}".format(amount_2[0], ingredient))
 
-            # if it could not  be converted, leave it as mls
+            # otherwise leave it as mls <<use amount[0], NOT amount_2[0]...
             else:
-                # print("add unchanged")
-                print("{} is unchanged".format(amount))
-                modernised_recipe.append("{} ml {}".format(amount, ingredient))
-                continue
+                modernised_recipe.append("{:.0f} ml {}".format(amount[0], ingredient))
 
-        # if it is not in mls...
+        # Unit is not in mls, add scaled ingredient to list with unchanged unit
         else:
-            print("update with original")
-            modernised_recipe.append("{} {} {}".format(amount, unit, ingredient))
+            modernised_recipe.append("{:.2f} {} {}".format(amount[0], unit, ingredient))
+
+    # number of spaces is 1 (or less)!!
+    else:
+        # Item only has ingredient (no unit)
+        modernised_recipe.append("{:.2f} {}".format(amount, unit_ingredient))
 
 
 # Put updated ingredient in the list
 
 # Output ingredient list
-for item in full_recipe:
+for item in modernised_recipe:
     print(item)
 
 # Loop for each ingredient...
